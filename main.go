@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 type Player struct {
@@ -60,11 +61,104 @@ func playersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetPlayers(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, players)
+	query := r.URL.Query()
+	idParam := query.Get("id")
+	teamParam := query.Get("team")
+	positionParam := query.Get("position")
+
+	if idParam != "" {
+		id, err := strconv.Atoi(idParam)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "Invalid id parameter")
+			return
+		}
+
+		for _, player := range players {
+			if player.ID == id {
+				writeJSON(w, http.StatusOK, player)
+				return
+			}
+		}
+
+		writeError(w, http.StatusNotFound, "Player not found")
+		return
+	}
+
+	result := []Player{}
+	for _, player := range players {
+		if teamParam != "" && player.Team != teamParam {
+			continue
+		}
+		if positionParam != "" && player.Position != positionParam {
+			continue
+		}
+		result = append(result, player)
+	}
+
+	writeJSON(w, http.StatusOK, result)
 }
 
 func handleCreatePlayer(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusCreated, map[string]string{"message": "coming soon"})
+	var newPlayer Player
+
+	err := json.NewDecoder(r.Body).Decode(&newPlayer)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "Invalid JSON body")
+		return
+	}
+
+	if newPlayer.Name == "" {
+		writeError(w, http.StatusBadRequest, "Name is required")
+		return
+	}
+	if newPlayer.Team == "" {
+		writeError(w, http.StatusBadRequest, "Team is required")
+		return
+	}
+	if newPlayer.Position == "" {
+		writeError(w, http.StatusBadRequest, "Position is required")
+		return
+	}
+	if newPlayer.JerseyNumber <= 0 {
+		writeError(w, http.StatusBadRequest, "Jersey number must be greater than 0")
+		return
+	}
+	if newPlayer.BirthYear < 1970 || newPlayer.BirthYear > 2010 {
+		writeError(w, http.StatusBadRequest, "Birth year must be between 1970 and 2010")
+		return
+	}
+	if newPlayer.Touchdowns < 0 {
+		writeError(w, http.StatusBadRequest, "Touchdowns cannot be negative")
+		return
+	}
+
+	newPlayer.ID = generateNextID()
+	players = append(players, newPlayer)
+	savePlayers()
+
+	writeJSON(w, http.StatusCreated, newPlayer)
+}
+
+func generateNextID() int {
+	maxID := 0
+	for _, player := range players {
+		if player.ID > maxID {
+			maxID = player.ID
+		}
+	}
+	return maxID + 1
+}
+
+func savePlayers() {
+	data, err := json.MarshalIndent(players, "", "  ")
+	if err != nil {
+		log.Println("Error marshaling JSON:", err)
+		return
+	}
+	err = os.WriteFile("./data/players.json", data, 0644)
+	if err != nil {
+		log.Println("Error writing file:", err)
+	}
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
