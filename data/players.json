@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "name": "Patrick Mahomes",
+    "team": "Kansas City Chiefs",
+    "position": "QB",
+    "jersey_number": 15,
+    "birth_year": 1995,
+    "touchdowns": 426
+  },
+  {
+    "id": 2,
+    "name": "Justin Jefferson",
+    "team": "Minnesota Vikings",
+    "position": "WR",
+    "jersey_number": 18,
+    "birth_year": 1999,
+    "touchdowns": 48
+  },
+  {
+    "id": 3,
+    "name": "Micah Parsons",
+    "team": "Dallas Cowboys",
+    "position": "LB",
+    "jersey_number": 11,
+    "birth_year": 1999,
+    "touchdowns": 3
+  },
+  {
+    "id": 4,
+    "name": "Ja'Marr Chase",
+    "team": "Cincinnati Bengals",
+    "position": "WR",
+    "jersey_number": 1,
+    "birth_year": 2000,
+    "touchdowns": 57
+  },
+  {
+    "id": 5,
+    "name": "Lamar Jackson",
+    "team": "Baltimore Ravens",
+    "position": "QB",
+    "jersey_number": 8,
+    "birth_year": 1997,
+    "touchdowns": 290
+  },
+  {
+    "id": 6,
+    "name": "T.J. Watt",
+    "team": "Pittsburgh Steelers",
+    "position": "OLB",
+    "jersey_number": 90,
+    "birth_year": 1994,
+    "touchdowns": 4
+  },
+  {
+    "id": 7,
+    "name": "Tyreek Hill",
+    "team": "Miami Dolphins",
+    "position": "WR",
+    "jersey_number": 10,
+    "birth_year": 1994,
+    "touchdowns": 80
+  },
+  {
+    "id": 8,
+    "name": "Josh Allen",
+    "team": "Buffalo Bills",
+    "position": "QB",
+    "jersey_number": 17,
+    "birth_year": 1996,
+    "touchdowns": 317
+  },
+  {
+    "id": 9,
+    "name": "Nick Bosa",
+    "team": "San Francisco 49ers",
+    "position": "DE",
+    "jersey_number": 97,
+    "birth_year": 1997,
+    "touchdowns": 2
+  },
+  {
+    "id": 10,
+    "name": "DK Metcalf",
+    "team": "Pittsburgh Steelers",
+    "position": "WR",
+    "jersey_number": 4,
+    "birth_year": 1997,
+    "touchdowns": 49
+  }
+]

@@ -5,144 +5,74 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 )
 
-type Team struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+type Player struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	Team         string `json:"team"`
+	Position     string `json:"position"`
+	JerseyNumber int    `json:"jersey_number"`
+	BirthYear    int    `json:"birth_year"`
+	Touchdowns   int    `json:"touchdowns"`
 }
 
-type Message struct {
-	Message string `json:"message"`
+type ErrorResponse struct {
+	Error string `json:"error"`
 }
 
-var teams []Team
+var players []Player
 
 func main() {
-	loadTeams()
+	loadPlayers()
 
 	http.HandleFunc("/api/ping", pingHandler)
-	http.HandleFunc("/api/teams", teamsHandler)
+	http.HandleFunc("/api/players", playersHandler)
 
-	log.Println("POST JSON API running on :80")
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Println("NFL Players API running on :24092")
+	log.Fatal(http.ListenAndServe(":24092", nil))
 }
 
-func loadTeams() {
-	file, err := os.ReadFile("./data/teams.json")
+func loadPlayers() {
+	file, err := os.ReadFile("./data/players.json")
 	if err != nil {
 		log.Fatal("Error reading file:", err)
 	}
-
-	err = json.Unmarshal(file, &teams)
+	err = json.Unmarshal(file, &players)
 	if err != nil {
 		log.Fatal("Error parsing JSON:", err)
 	}
 }
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
-	response := Message{
-		Message: "pong",
-	}
-
-	writeJSON(w, http.StatusOK, response)
+	writeJSON(w, http.StatusOK, map[string]string{"message": "pong"})
 }
 
-func teamsHandler(w http.ResponseWriter, r *http.Request) {
-
+func playersHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
-
 	case http.MethodGet:
-		handleGetTeams(w, r)
-
+		handleGetPlayers(w, r)
 	case http.MethodPost:
-		handleCreateTeam(w, r)
-
+		handleCreatePlayer(w, r)
 	default:
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		writeError(w, http.StatusMethodNotAllowed, "Method not allowed")
 	}
 }
 
-func handleGetTeams(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	idParam := query.Get("id")
-
-	if idParam == "" {
-		writeJSON(w, http.StatusOK, teams)
-		return
-	}
-
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		http.Error(w, "Invalid id parameter", http.StatusBadRequest)
-		return
-	}
-
-	for _, team := range teams {
-		if team.ID == id {
-			writeJSON(w, http.StatusOK, team)
-			return
-		}
-	}
-
-	http.Error(w, "Team not found", http.StatusNotFound)
+func handleGetPlayers(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, players)
 }
 
-func handleCreateTeam(w http.ResponseWriter, r *http.Request) {
-
-	var newTeam Team
-
-	err := json.NewDecoder(r.Body).Decode(&newTeam)
-	if err != nil {
-		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
-		return
-	}
-
-	if newTeam.Name == "" {
-		http.Error(w, "Name is required", http.StatusBadRequest)
-		return
-	}
-
-	newTeam.ID = generateNextID()
-
-	teams = append(teams, newTeam)
-	saveTeams()
-
-	writeJSON(w, http.StatusCreated, newTeam)
-}
-
-func generateNextID() int {
-	maxID := 0
-
-	for _, team := range teams {
-		if team.ID > maxID {
-			maxID = team.ID
-		}
-	}
-
-	return maxID + 1
-}
-
-func saveTeams() {
-	data, err := json.MarshalIndent(teams, "", "  ")
-	if err != nil {
-		log.Println("Error marshaling JSON:", err)
-		return
-	}
-
-	err = os.WriteFile("./data/teams.json", data, 0644)
-	if err != nil {
-			log.Println("Error writing file:", err)
-	}
+func handleCreatePlayer(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusCreated, map[string]string{"message": "coming soon"})
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(payload)
+}
 
-	err := json.NewEncoder(w).Encode(payload)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
+func writeError(w http.ResponseWriter, status int, message string) {
+	writeJSON(w, status, ErrorResponse{Error: message})
 }
