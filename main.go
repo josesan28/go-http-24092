@@ -29,6 +29,7 @@ func main() {
 
 	http.HandleFunc("/api/ping", pingHandler)
 	http.HandleFunc("/api/players", playersHandler)
+	http.HandleFunc("/api/players/", playerByIDHandler)
 
 	log.Println("NFL Players API running on :24092")
 	log.Fatal(http.ListenAndServe(":24092", nil))
@@ -147,6 +148,56 @@ func generateNextID() int {
 		}
 	}
 	return maxID + 1
+}
+
+func playerByIDHandler(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Path[len("/api/players/"):]
+
+	if idStr == "" {
+		writeError(w, http.StatusBadRequest, "Missing player ID")
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "Invalid player ID")
+		return
+	}
+
+	switch r.Method {
+	case http.MethodGet:
+		handleGetPlayerByID(w, r, id)
+	//case http.MethodPut:
+	//handleUpdatePlayer(w, r, id)
+	//case http.MethodPatch:
+	//handlePatchPlayer(w, r, id)
+	case http.MethodDelete:
+		handleDeletePlayer(w, r, id)
+	default:
+		writeError(w, http.StatusMethodNotAllowed, "Method not allowed")
+	}
+}
+
+func handleGetPlayerByID(w http.ResponseWriter, r *http.Request, id int) {
+	for _, player := range players {
+		if player.ID == id {
+			writeJSON(w, http.StatusOK, player)
+			return
+		}
+	}
+	writeError(w, http.StatusNotFound, "Player not found")
+}
+
+func handleDeletePlayer(w http.ResponseWriter, r *http.Request, id int) {
+	for i, player := range players {
+		if player.ID == id {
+			players = append(players[:i], players[i+1:]...)
+			savePlayers()
+			writeJSON(w, http.StatusOK, map[string]string{"message": "Player deleted successfully"})
+			return
+		}
+	}
+	writeError(w, http.StatusNotFound, "Player not found")
 }
 
 func savePlayers() {
