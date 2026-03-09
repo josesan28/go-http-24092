@@ -107,7 +107,7 @@ func handleCreateTeam(w http.ResponseWriter, r *http.Request) {
 	newTeam.ID = generateNextID()
 
 	teams = append(teams, newTeam)
-	// saveTeams()
+	saveTeams()
 
 	writeJSON(w, http.StatusCreated, newTeam)
 }
@@ -124,18 +124,18 @@ func generateNextID() int {
 	return maxID + 1
 }
 
-// func saveTeams() {
-// 	data, err := json.MarshalIndent(teams, "", "  ")
-// 	if err != nil {
-// 		log.Println("Error marshaling JSON:", err)
-// 		return
-// 	}
+func saveTeams() {
+	data, err := json.MarshalIndent(teams, "", "  ")
+	if err != nil {
+		log.Println("Error marshaling JSON:", err)
+		return
+	}
 
-// 	err = os.WriteFile("./data/teams.json", data, 0644)
-// 	if err != nil {
-// 		log.Println("Error writing file:", err)
-// 	}
-// }
+	err = os.WriteFile("./data/teams.json", data, 0644)
+	if err != nil {
+			log.Println("Error writing file:", err)
+	}
+}
 
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
