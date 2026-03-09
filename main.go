@@ -166,19 +166,19 @@ func playerByIDHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		handleGetPlayerByID(w, r, id)
-	//case http.MethodPut:
-	//handleUpdatePlayer(w, r, id)
-	//case http.MethodPatch:
-	//handlePatchPlayer(w, r, id)
+		handleGetPlayerByID(w, id)
+	case http.MethodPut:
+		handleUpdatePlayer(w, r, id)
+	case http.MethodPatch:
+		handlePatchPlayer(w, r, id)
 	case http.MethodDelete:
-		handleDeletePlayer(w, r, id)
+		handleDeletePlayer(w, id)
 	default:
 		writeError(w, http.StatusMethodNotAllowed, "Method not allowed")
 	}
 }
 
-func handleGetPlayerByID(w http.ResponseWriter, r *http.Request, id int) {
+func handleGetPlayerByID(w http.ResponseWriter, id int) {
 	for _, player := range players {
 		if player.ID == id {
 			writeJSON(w, http.StatusOK, player)
@@ -188,7 +188,7 @@ func handleGetPlayerByID(w http.ResponseWriter, r *http.Request, id int) {
 	writeError(w, http.StatusNotFound, "Player not found")
 }
 
-func handleDeletePlayer(w http.ResponseWriter, r *http.Request, id int) {
+func handleDeletePlayer(w http.ResponseWriter, id int) {
 	for i, player := range players {
 		if player.ID == id {
 			players = append(players[:i], players[i+1:]...)
@@ -197,6 +197,116 @@ func handleDeletePlayer(w http.ResponseWriter, r *http.Request, id int) {
 			return
 		}
 	}
+	writeError(w, http.StatusNotFound, "Player not found")
+}
+
+func handleUpdatePlayer(w http.ResponseWriter, r *http.Request, id int) {
+	var updated Player
+
+	err := json.NewDecoder(r.Body).Decode(&updated)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "Invalid JSON body")
+		return
+	}
+
+	if updated.Name == "" {
+		writeError(w, http.StatusBadRequest, "Name is required")
+		return
+	}
+	if updated.Team == "" {
+		writeError(w, http.StatusBadRequest, "Team is required")
+		return
+	}
+	if updated.Position == "" {
+		writeError(w, http.StatusBadRequest, "Position is required")
+		return
+	}
+	if updated.JerseyNumber <= 0 {
+		writeError(w, http.StatusBadRequest, "Jersey number must be greater than 0")
+		return
+	}
+	if updated.BirthYear < 1970 || updated.BirthYear > 2010 {
+		writeError(w, http.StatusBadRequest, "Birth year must be between 1970 and 2010")
+		return
+	}
+	if updated.Touchdowns < 0 {
+		writeError(w, http.StatusBadRequest, "Touchdowns cannot be negative")
+		return
+	}
+
+	for i, player := range players {
+		if player.ID == id {
+			updated.ID = id
+			players[i] = updated
+			savePlayers()
+			writeJSON(w, http.StatusOK, updated)
+			return
+		}
+	}
+
+	writeError(w, http.StatusNotFound, "Player not found")
+}
+
+func handlePatchPlayer(w http.ResponseWriter, r *http.Request, id int) {
+	var partial map[string]interface{}
+
+	err := json.NewDecoder(r.Body).Decode(&partial)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "Invalid JSON body")
+		return
+	}
+
+	for i, player := range players {
+		if player.ID == id {
+			if name, ok := partial["name"].(string); ok {
+				if name == "" {
+					writeError(w, http.StatusBadRequest, "Name cannot be empty")
+					return
+				}
+				players[i].Name = name
+			}
+			if team, ok := partial["team"].(string); ok {
+				if team == "" {
+					writeError(w, http.StatusBadRequest, "Team cannot be empty")
+					return
+				}
+				players[i].Team = team
+			}
+			if position, ok := partial["position"].(string); ok {
+				if position == "" {
+					writeError(w, http.StatusBadRequest, "Position cannot be empty")
+					return
+				}
+				players[i].Position = position
+			}
+			if jersey, ok := partial["jersey_number"].(float64); ok {
+				if int(jersey) <= 0 {
+					writeError(w, http.StatusBadRequest, "Jersey number must be greater than 0")
+					return
+				}
+				players[i].JerseyNumber = int(jersey)
+			}
+			if birthYear, ok := partial["birth_year"].(float64); ok {
+				if int(birthYear) < 1970 || int(birthYear) > 2010 {
+					writeError(w, http.StatusBadRequest, "Birth year must be between 1970 and 2010")
+					return
+				}
+				players[i].BirthYear = int(birthYear)
+			}
+			if tds, ok := partial["touchdowns"].(float64); ok {
+				if int(tds) < 0 {
+					writeError(w, http.StatusBadRequest, "Touchdowns cannot be negative")
+					return
+				}
+				players[i].Touchdowns = int(tds)
+			}
+
+			savePlayers()
+			writeJSON(w, http.StatusOK, players[i])
+			return
+		}
+	}
+
 	writeError(w, http.StatusNotFound, "Player not found")
 }
 
