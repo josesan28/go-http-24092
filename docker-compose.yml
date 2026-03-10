@@ -1,0 +1,9 @@
+
+services:
+  go-server:
+    build: .
+    container_name: go-server
+    ports:
+      - "24092:24092"
+    volumes:
+      - .:/app

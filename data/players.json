@@ -6,7 +6,7 @@
     "position": "QB",
     "jersey_number": 15,
     "birth_year": 1995,
-    "touchdowns": 426
+    "touchdowns": 500
   },
   {
     "id": 2,
@@ -73,12 +73,12 @@
   },
   {
     "id": 9,
-    "name": "Nick Bosa",
-    "team": "San Francisco 49ers",
-    "position": "DE",
-    "jersey_number": 97,
-    "birth_year": 1997,
-    "touchdowns": 2
+    "name": "Matthew Stafford",
+    "team": "Los Angeles Rams",
+    "position": "QB",
+    "jersey_number": 30,
+    "birth_year": 1989,
+    "touchdowns": 543
   },
   {
     "id": 10,
