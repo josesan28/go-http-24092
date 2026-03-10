@@ -105,7 +105,7 @@ GET http://localhost:24092/api/players?id=1
 
 ---
 
-### GET /api/players?team=Buffalo Bills&position=QB
+### GET /api/players?team=Baltimore Ravens&position=QB
 Filtra jugadores por `team` y/o `position`. Se pueden combinar ambos filtros.
 
 **Request:**
@@ -117,8 +117,8 @@ GET http://localhost:24092/api/players?team=Baltimore Ravens&position=QB
 ```json
 [
   {
-    "id": 1,
-    "name": "Patrick Mahomes",
+    "id": 5,
+    "name": "Lamar Jackson",
     ...
   }
 ]
@@ -146,13 +146,6 @@ GET http://localhost:24092/api/players/1
   "jersey_number": 15,
   "birth_year": 1995,
   "touchdowns": 426
-}
-```
-
-**Response 404:**
-```json
-{
-  "error": "Player not found"
 }
 ```
 
@@ -191,13 +184,6 @@ Content-Type: application/json
   "jersey_number": 9,
   "birth_year": 1996,
   "touchdowns": 130
-}
-```
-
-**Response 400:**
-```json
-{
-  "error": "Name is required"
 }
 ```
 
